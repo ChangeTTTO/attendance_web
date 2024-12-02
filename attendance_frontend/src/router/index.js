@@ -1,5 +1,6 @@
 import container from "../page/container.vue";
-import {createRouter, createWebHistory} from "vue-router";
+import {createRouter, createWebHistory,createWebHashHistory} from "vue-router";
+import student from "../page/student.vue";
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -8,10 +9,20 @@ const router = createRouter({
             path: '/',
             component: container,
             redirect: '/welcome',
-            /*children: [
-
+           /* children: [
+                {
+                    name:'学生管理界面',
+                    path: '/student',
+                    component: student,
+                }
             ]*/
+
         },
+        {
+            name: '学生管理界面',
+            path: '/student',
+            component: student,
+        }
 
        /* {
             path: '/login',

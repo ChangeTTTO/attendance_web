@@ -1,8 +1,8 @@
 <template>
   <div>
-    <el-container style="height: 100vh; overflow-y: auto;"> <!--包裹着整个浏览器的大边框-->
+    <el-container style="height: 100vh;"> <!--包裹着整个浏览器的大边框-->
 
-      <el-aside style="width: 250px; min-height: 100vh ;position: sticky; top: 0; z-index: 999" ><!--侧边栏-->
+      <el-aside style="width: 250px ;" ><!--侧边栏-->
         <div style="height: 50px ; background-color: #4F6AA3;margin: 0;
                    color: #D3DAE8;font-size: 20px;display: flex;align-items: center;justify-content: center;">
           <!--设置文本行高line-height:60px-->
@@ -12,7 +12,7 @@
           <!--   ！！！！ 如果 isDivActive 的值为 true，则将会为包含这个:class绑定的HTML元素添加 active 类-->
           <div class="highlight-div" @click="handleDivClick" :class="{ 'active': isDivActive }">
             <el-icon style="font-size: 20px;"><List /></el-icon>
-            <span style="position: relative; left: 10px"><RouterLink to="/interfaceList">接口列表</RouterLink></span>
+            <span style="position: relative; left: 10px"><RouterLink to="/student">学生管理</RouterLink></span>
           </div>
 
         </el-row>
@@ -27,7 +27,7 @@
 
       <el-container  > <!--侧边栏右边的大框架-->
 
-        <el-header class="head" style="background-color: #3B5998; height: 50px; position: sticky; top: 0; z-index: 999"><!--右边大框架的头部-->
+        <el-header class="head" style="background-color: #3B5998; height: 50px;  top: 0; z-index: 999"><!--右边大框架的头部-->
 
           <!--          <el-dropdown>
 
@@ -62,8 +62,8 @@
         </el-header>
 
         <el-main style="padding: 0;background-color: #F0F3F8; " >  <!--右边大框架的主体-->
-          <div style="margin-top: 30px;">
-            <router-view/>
+          <div>
+            <router-view />
           </div>
         </el-main>
 
@@ -145,9 +145,8 @@ a{
   background-color: #D8E0F0; /* 点击后的背景颜色 */
 }
 
-.highlight-div:hover { /*绝招，鼠标移动上去会有效果*/
+.highlight-div:hover { /*鼠标移动上去会有效果*/
   cursor: pointer; /* 将鼠标光标变为手形以指示可点击 */
-
   background-color: #D8E0F0; /* 鼠标悬停时的背景颜色 */
 }
 /*当屏幕铺不满时使用*/
