@@ -2,7 +2,7 @@ package com.pn.mapper;
 
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.pn.entity.Student;
+import com.pn.domain.Student;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
