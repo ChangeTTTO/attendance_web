@@ -3,7 +3,7 @@
 <mapper namespace="com.pn.mapper.TeacherMapper">
 
     <!-- 通用查询映射结果 -->
-    <resultMap id="BaseResultMap" type="com.pn.entity.Teacher">
+    <resultMap id="BaseResultMap" type="com.pn.domain.Teacher">
         <id column="id" property="id" />
         <result column="teacher_no" property="teacherNo" />
         <result column="password" property="password" />

@@ -24,4 +24,6 @@ public class R {
     public static R error(String msg){
         return new R(0,msg,null);
     }
+
+
 }

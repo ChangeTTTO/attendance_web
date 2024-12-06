@@ -28,13 +28,13 @@ public class StudentCheckRecord implements Serializable {
     /**
      * 主键
      */
-    @TableId(value = "id", type = IdType.AUTO)
+    @TableId
     private Long id;
 
     /**
      * 打卡记录 ID
      */
-    private Long teacherCheckRecord;
+    private Long teacherCheckRecordId;
 
     /**
      * 学生 ID，关联学生表的主键
@@ -44,7 +44,7 @@ public class StudentCheckRecord implements Serializable {
     /**
      * 打卡状态：1-成功，2-迟到，3-缺卡
      */
-    private Integer status;
+    private String status;
 
     /**
      * 记录创建时间

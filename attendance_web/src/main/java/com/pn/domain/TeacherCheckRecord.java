@@ -1,5 +1,6 @@
 package com.pn.domain;
 
+import java.io.Serial;
 import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -24,12 +25,13 @@ import lombok.experimental.Accessors;
 @TableName("teacherCheckRecord")
 public class TeacherCheckRecord implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     /**
      * 主键
      */
-    @TableId(value = "id", type = IdType.AUTO)
+    @TableId
     private Long id;
 
     /**

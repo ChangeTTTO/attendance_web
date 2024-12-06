@@ -1,12 +1,25 @@
 package com.pn.controller;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.pn.config.R;
+import com.pn.domain.Bo.StudentCheckBo;
 import com.pn.domain.StudentCheckRecord;
+import com.pn.domain.TeacherCheckRecord;
 import com.pn.mapper.StudentCheckRecordMapper;
+import com.pn.mapper.TeacherCheckRecordMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.geo.Distance;
+import org.springframework.data.geo.Point;
+import org.springframework.data.redis.core.GeoOperations;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.domain.geo.Metrics;
 import org.springframework.web.bind.annotation.*;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * <p>
@@ -22,13 +35,84 @@ import org.springframework.web.bind.annotation.*;
 public class StudentCheckRecordController {
 
     private final StudentCheckRecordMapper studentCheckRecordMapper;
+    private final TeacherCheckRecordMapper teacherCheckRecordMapper;
+    private final RedisTemplate<String,String> redisTemplate;
 
     @PostMapping
     @Operation(summary = "新增学生打卡记录")
-    public R addStudentCheckRecord(@RequestBody StudentCheckRecord record) {
-        int result = studentCheckRecordMapper.insert(record);
-        return result > 0 ? R.success("新增成功") : R.error("新增失败");
+    public R addStudentCheckRecord(@RequestBody StudentCheckBo record) {
+        // 获取学生的经纬度
+        BigDecimal studentLatitude = record.getLatitude();
+        BigDecimal studentLongitude = record.getLongitude();
+        Long studentId = record.getStudentId();
+        if (studentLatitude == null || studentLongitude == null) {
+            return R.error("学生经纬度不能为空");
+        }
+
+        // 获取教师打卡记录 ID
+        Long teacherCheckRecordId = record.getTeacherCheckRecordId();
+        if (teacherCheckRecordId == null) {
+            return R.error("教师打卡记录 ID 不能为空");
+        }
+
+        // 查询教师打卡记录
+        TeacherCheckRecord teacherRecord = teacherCheckRecordMapper.selectById(teacherCheckRecordId);
+        if (teacherRecord == null) {
+            return R.error("无法找到对应的教师打卡记录");
+        }
+
+        LocalDateTime teacherEndTime = teacherRecord.getEndTime();
+        // 教师允许打卡的最后时间（迟到界限）
+        LocalDateTime teacherLateTime = teacherEndTime.plusMinutes(10);
+
+        LocalDateTime now = LocalDateTime.now();
+
+        // 检查时间是否超过教师的打卡结束时间
+        if (now.isAfter(teacherLateTime)) {
+            return R.error("打卡失败，已超过允许打卡时间");
+        }
+
+        // 判断是否是迟到
+        String status = "成功";
+        if (now.isAfter(teacherEndTime)) {
+            status = "迟到";
+        }
+
+        // 从 Redis 获取教师发起打卡的位置信息
+        String geoKey = "teacherCheckRecord:geo:" + teacherCheckRecordId;
+        GeoOperations<String, String> geo = redisTemplate.opsForGeo();
+
+        // 将学生位置存入 Redis
+        geo.add(studentId.toString(), new Point(studentLongitude.doubleValue(), studentLatitude.doubleValue()), "studentLocation");
+
+        // 计算学生位置与教师位置的距离（米）
+        Distance distance = geo.distance(
+                geoKey,
+                "teacherLocation",
+                "studentLocation",
+                Metrics.METERS
+        );
+
+        // 检查距离是否超过 300 米
+        if (distance == null || distance.getValue() > 300) {
+            geo.remove(studentId.toString(), "studentLocation");
+            return R.error("不在允许打卡的范围内，距离超过 300 米");
+        }
+
+        // 如果距离合规，插入学生打卡记录
+        StudentCheckRecord studentCheckRecord = new StudentCheckRecord();
+        studentCheckRecord.setTeacherCheckRecordId(teacherCheckRecordId);
+        studentCheckRecord.setStudentId(record.getStudentId());
+        studentCheckRecord.setStatus(status);
+        studentCheckRecord.setCreateTime(now);
+
+        geo.remove(studentId.toString(), "studentLocation");
+
+        int result = studentCheckRecordMapper.insert(studentCheckRecord);
+        return result > 0 ? R.success("打卡成功，状态：" + status) : R.error("打卡失败");
     }
+
+
 
     @GetMapping("/{id}")
     @Operation(summary = "根据 ID 查询学生打卡记录")

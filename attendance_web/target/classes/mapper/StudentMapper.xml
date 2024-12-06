@@ -3,7 +3,7 @@
 <mapper namespace="org.py.mymodule.submodule.mapper.StudentMapper">
 
     <!-- 通用查询映射结果 -->
-    <resultMap id="BaseResultMap" type="com.pn.entity.Student">
+    <resultMap id="BaseResultMap" type="com.pn.domain.Student">
         <id column="id" property="id" />
         <result column="student_no" property="studentNo" />
         <result column="name" property="name" />

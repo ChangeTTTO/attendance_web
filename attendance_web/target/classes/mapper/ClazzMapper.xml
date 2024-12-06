@@ -3,7 +3,7 @@
 <mapper namespace="com.pn.mapper.ClazzMapper">
 
     <!-- 通用查询映射结果 -->
-    <resultMap id="BaseResultMap" type="com.pn.entity.Clazz">
+    <resultMap id="BaseResultMap" type="com.pn.domain.Clazz">
         <id column="id" property="id" />
         <result column="clazz_name" property="clazzName" />
         <result column="teacher_id" property="teacherId" />

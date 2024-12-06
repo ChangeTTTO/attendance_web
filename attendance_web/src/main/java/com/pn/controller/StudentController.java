@@ -2,8 +2,10 @@ package com.pn.controller;
 
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.pn.config.R;
+import com.pn.domain.Bo.StudentLoginRequest;
 import com.pn.domain.Clazz;
 import com.pn.domain.Student;
 import com.pn.mapper.ClazzMapper;
@@ -12,6 +14,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -142,6 +145,66 @@ public class StudentController {
         finalPage.setTotal(result.getTotal());
 
         return R.success(finalPage);
+    }
+
+    // 学生登录接口
+    @PostMapping("/login")
+    public R login(@RequestBody StudentLoginRequest loginRequest) {
+        // 根据学号查询学生信息
+        QueryWrapper<Student> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("student_no", loginRequest.getStudentNo());
+        Student student = studentMapper.selectOne(queryWrapper);
+
+        // 校验学生是否存在以及密码是否匹配
+        if (student == null) {
+            return R.error("学号不存在");
+        }
+        if (!student.getPassword().equals(loginRequest.getPassword())) {
+            return R.error("密码错误");
+        }
+
+        // 返回成功并携带学生信息
+        return R.success(student);
+    }
+
+    // 学生注册接口
+    @PostMapping("/register")
+    public R register(@RequestBody Student registerRequest) {
+        // 校验是否已存在此学号
+        QueryWrapper<Student> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("student_no", registerRequest.getStudentNo());
+        Student existingStudent = studentMapper.selectOne(queryWrapper);
+
+        if (existingStudent != null) {
+            return R.error("学号已存在");
+        }
+
+        // 创建新学生对象
+        Student newStudent = new Student();
+        newStudent.setStudentNo(registerRequest.getStudentNo());
+        newStudent.setPassword(registerRequest.getPassword());
+        newStudent.setPhone(registerRequest.getPhone());
+        newStudent.setName(registerRequest.getName());
+        newStudent.setGender(registerRequest.getGender());
+        newStudent.setAddress(registerRequest.getAddress());
+        newStudent.setClazzId(registerRequest.getClazzId());
+        newStudent.setCreateTime(LocalDateTime.now());
+        newStudent.setUpdateTime(LocalDateTime.now());
+
+        // 插入数据到数据库
+        int result = studentMapper.insert(newStudent);
+        if (result > 0) {
+            return R.success("注册成功");
+        } else {
+            return R.error("注册失败");
+        }
+    }
+
+    // 退出登录接口
+    @PostMapping("/logout")
+    public R logout() {
+        // 退出登录不需要特别处理，直接返回成功响应
+        return R.success("退出登录成功");
     }
 
 

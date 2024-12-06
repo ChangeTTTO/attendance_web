@@ -38,6 +38,11 @@ public class Student implements Serializable {
     private String studentNo;
 
     /**
+     * 登陆密码
+     */
+    private String password;
+
+    /**
      * 学生姓名
      */
     private String name;
