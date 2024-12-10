@@ -1,12 +1,16 @@
 package com.pn.domain;
 
 import java.io.Serial;
-import java.math.BigDecimal;
+import java.lang.reflect.Type;
+
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import java.time.LocalDateTime;
 import java.io.Serializable;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -31,7 +35,6 @@ public class TeacherCheckRecord implements Serializable {
     /**
      * 主键
      */
-    @TableId
     private Long id;
 
     /**
@@ -40,29 +43,53 @@ public class TeacherCheckRecord implements Serializable {
     private Long teacherId;
 
     /**
+     * 教师姓名
+     */
+    @TableField(exist = false)
+    private String teacherName;
+
+    /**
      * 班级ID
      */
     private Long clazzId;
 
     /**
+     * 班级名
+     */
+    @TableField(exist = false)
+    private String clazzName;
+
+    /**
      * 打卡开始时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime startTime;
 
     /**
      * 打卡结束时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime endTime;
 
     /**
      * 纬度
      */
-    private BigDecimal latitude;
+    private Double latitude;
 
     /**
      * 经度
      */
-    private BigDecimal longitude;
+    private Double longitude;
+
+    /**
+     * 地址信息
+     */
+    private String address;
+
+    /**
+     * 打卡范围
+     */
+    private Integer distance;
 
     /**
      * 打卡状态：进行中，已结束

@@ -1,11 +1,15 @@
 package com.pn.controller;
 
 
+import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.pn.config.R;
+import com.pn.domain.Bo.TeacherCheckBo;
 import com.pn.domain.TeacherCheckRecord;
+import com.pn.mapper.ClazzMapper;
 import com.pn.mapper.TeacherCheckRecordMapper;
+import com.pn.mapper.TeacherMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.geo.Point;
@@ -13,7 +17,7 @@ import org.springframework.data.redis.core.GeoOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -32,21 +36,25 @@ import java.util.List;
 public class TeacherCheckRecordController {
 
     private final TeacherCheckRecordMapper teacherCheckRecordMapper;
+    private final TeacherMapper teacherMapper;
+    private final ClazzMapper clazzMapper;
     private final RedisTemplate<String,String> redisTemplate;
 
 
     @PostMapping
     @Operation(summary = "新增教师发起打卡记录")
-    public R addTeacherCheckRecord(@RequestBody TeacherCheckRecord record) {
+    public R addTeacherCheckRecord(@RequestBody TeacherCheckBo record) {
         // 插入教师打卡记录到数据库
-        int result = teacherCheckRecordMapper.insert(record);
+        TeacherCheckRecord teacherCheckRecord = BeanUtil.copyProperties(record, TeacherCheckRecord.class);
+        int result = teacherCheckRecordMapper.insert(teacherCheckRecord);
         if (result <= 0) {
             return R.error("新增失败");
         }
 
         // 检查经纬度是否有效
-        BigDecimal latitude = record.getLatitude();
-        BigDecimal longitude = record.getLongitude();
+        Double  latitude = record.getLatitude();
+        Double  longitude = record.getLongitude();
+        Long id = teacherCheckRecord.getId();
         if (latitude == null || longitude == null) {
             return R.error("教师发起的打卡记录需要提供有效的经纬度");
         }
@@ -54,9 +62,9 @@ public class TeacherCheckRecordController {
         // Redis GEO 操作
         GeoOperations<String, String> geo = redisTemplate.opsForGeo();
 
-        String geoKey = "teacherCheckRecord:geo:" + record.getId();
+        String geoKey = "teacherCheckRecord:geo:" +id ;
         // 将教师位置存入 Redis 并设置过期时间
-        geo.add(geoKey, new Point(longitude.doubleValue(), latitude.doubleValue()), "teacherLocation");
+        geo.add(geoKey, new Point(longitude, latitude), "teacherLocation");
         Duration ttl = Duration.between(record.getStartTime(), record.getEndTime());
         if (!ttl.isNegative()) {
             redisTemplate.expire(geoKey, ttl);
@@ -77,9 +85,18 @@ public class TeacherCheckRecordController {
     @GetMapping("/byClazz/{clazzId}")
     @Operation(summary = "根据 班级ID 查询教师发起打卡记录")
     public R getTeacherCheckRecordByClazzId(@PathVariable Long clazzId) {
-        List<TeacherCheckRecord> records = teacherCheckRecordMapper.selectList(
-                new LambdaQueryWrapper<TeacherCheckRecord>().eq(TeacherCheckRecord::getClazzId, clazzId));
-        return records != null ? R.success(records) : R.error("没有该行数据");
+
+        TeacherCheckRecord records = teacherCheckRecordMapper.selectOne(
+                new LambdaQueryWrapper<TeacherCheckRecord>().eq(TeacherCheckRecord::getClazzId, clazzId)
+                        .orderByDesc(TeacherCheckRecord::getCreateTime)
+                        .last("limit 1"));
+        Long teacherId = records.getTeacherId();
+
+        String clazzName = clazzMapper.selectById(clazzId).getClazzName();
+        String teacherName = teacherMapper.selectById(teacherId).getName();
+        records.setTeacherName(teacherName);
+        records.setClazzName(clazzName);
+        return R.success(records);
     }
 
     @PutMapping

@@ -17,9 +17,9 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.domain.geo.Metrics;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
+
 import java.time.LocalDateTime;
-import java.util.List;
+
 
 /**
  * <p>
@@ -42,8 +42,9 @@ public class StudentCheckRecordController {
     @Operation(summary = "新增学生打卡记录")
     public R addStudentCheckRecord(@RequestBody StudentCheckBo record) {
         // 获取学生的经纬度
-        BigDecimal studentLatitude = record.getLatitude();
-        BigDecimal studentLongitude = record.getLongitude();
+        Double  studentLatitude = record.getLatitude();
+        Double  studentLongitude = record.getLongitude();
+        Long id = record.getTeacherCheckRecordId();
         Long studentId = record.getStudentId();
         if (studentLatitude == null || studentLongitude == null) {
             return R.error("学生经纬度不能为空");
@@ -78,12 +79,11 @@ public class StudentCheckRecordController {
             status = "迟到";
         }
 
-        // 从 Redis 获取教师发起打卡的位置信息
-        String geoKey = "teacherCheckRecord:geo:" + teacherCheckRecordId;
+        String geoKey = "teacherCheckRecord:geo:"+id;
         GeoOperations<String, String> geo = redisTemplate.opsForGeo();
 
         // 将学生位置存入 Redis
-        geo.add(studentId.toString(), new Point(studentLongitude.doubleValue(), studentLatitude.doubleValue()), "studentLocation");
+        geo.add("teacherCheckRecord:geo:"+id, new Point(studentLongitude, studentLatitude), "studentLocation");
 
         // 计算学生位置与教师位置的距离（米）
         Distance distance = geo.distance(
@@ -92,9 +92,9 @@ public class StudentCheckRecordController {
                 "studentLocation",
                 Metrics.METERS
         );
-
+        System.out.println("嘻嘻嘻哈哈"+distance.getValue()/10000);
         // 检查距离是否超过 300 米
-        if (distance == null || distance.getValue() > 300) {
+        if (distance == null || distance.getValue()/10000 > 500) {
             geo.remove(studentId.toString(), "studentLocation");
             return R.error("不在允许打卡的范围内，距离超过 300 米");
         }

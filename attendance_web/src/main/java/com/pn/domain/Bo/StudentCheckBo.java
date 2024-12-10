@@ -2,7 +2,7 @@ package com.pn.domain.Bo;
 
 import lombok.Data;
 
-import java.math.BigDecimal;
+
 
 /**
  * @author TaoJiLu
@@ -23,10 +23,10 @@ public class StudentCheckBo {
     /**
      * 学生纬度
      */
-    private BigDecimal latitude;
+    private Double latitude;
 
     /**
      * 学生经度
      */
-    private BigDecimal longitude;
+    private Double longitude;
 }

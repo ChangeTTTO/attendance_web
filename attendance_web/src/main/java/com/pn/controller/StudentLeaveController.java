@@ -1,10 +1,12 @@
 package com.pn.controller;
 
 
+import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.pn.config.R;
+import com.pn.domain.Bo.StudentLeaveBo;
 import com.pn.domain.Student;
 import com.pn.domain.StudentLeave;
 import com.pn.mapper.StudentLeaveMapper;
@@ -36,12 +38,12 @@ public class StudentLeaveController {
     /**
      * 请假
      *
-     * @param studentLeave 请假实体
      * @return 响应结果
      */
     @PostMapping
     @Operation(summary = "请假")
-    public R createStudentLeave(@RequestBody StudentLeave studentLeave) {
+    public R createStudentLeave(@RequestBody StudentLeaveBo studentLeaveBo) {
+        StudentLeave studentLeave = BeanUtil.copyProperties(studentLeaveBo, StudentLeave.class);
         int result = studentLeaveMapper.insert(studentLeave);
         return result > 0 ? R.success() : R.error("新增请假记录失败");
     }
