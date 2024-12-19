@@ -42,6 +42,11 @@ public class StudentCheckRecord implements Serializable {
     private Long studentId;
 
     /**
+     * 班级id
+     */
+    private Long clazzId;
+
+    /**
      * 打卡状态：1-成功，2-迟到，3-缺卡
      */
     private String status;

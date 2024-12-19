@@ -2,6 +2,8 @@ package com.pn.controller;
 
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.pn.config.R;
@@ -65,7 +67,7 @@ public class TeacherCheckRecordController {
         String geoKey = "teacherCheckRecord:geo:" +id ;
         // 将教师位置存入 Redis 并设置过期时间
         geo.add(geoKey, new Point(longitude, latitude), "teacherLocation");
-        Duration ttl = Duration.between(record.getStartTime(), record.getEndTime());
+        Duration ttl = Duration.between(LocalDateTime.now(), record.getEndTime());
         if (!ttl.isNegative()) {
             redisTemplate.expire(geoKey, ttl);
         }

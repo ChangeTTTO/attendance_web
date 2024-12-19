@@ -1,7 +1,10 @@
 package com.pn.domain.Bo;
 
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.io.unit.DataUnit;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
+import org.apache.commons.lang3.time.DateUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -23,14 +26,14 @@ public class StudentLeaveBo {
     /**
      * 请假开始时间
      */
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate  startDate;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime  startDate;
 
     /**
      * 请假结束时间
      */
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate endDate;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime endDate;
 
     /**
      * 请假原因

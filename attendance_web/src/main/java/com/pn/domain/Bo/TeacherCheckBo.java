@@ -12,7 +12,6 @@ public class TeacherCheckBo {
     private Long id;
     public Long teacherId;
     public Long clazzId;
-    public LocalDateTime startTime;
     public LocalDateTime endTime;
     public Double latitude;
     public Double longitude;

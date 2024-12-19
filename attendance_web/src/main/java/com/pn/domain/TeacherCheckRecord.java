@@ -60,12 +60,6 @@ public class TeacherCheckRecord implements Serializable {
     private String clazzName;
 
     /**
-     * 打卡开始时间
-     */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime startTime;
-
-    /**
      * 打卡结束时间
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")

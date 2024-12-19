@@ -41,15 +41,21 @@ public class StudentCheckRecordController {
     @PostMapping
     @Operation(summary = "新增学生打卡记录")
     public R addStudentCheckRecord(@RequestBody StudentCheckBo record) {
+
         // 获取学生的经纬度
         Double  studentLatitude = record.getLatitude();
         Double  studentLongitude = record.getLongitude();
-        Long id = record.getTeacherCheckRecordId();
+        Long recordId = record.getTeacherCheckRecordId();
         Long studentId = record.getStudentId();
         if (studentLatitude == null || studentLongitude == null) {
             return R.error("学生经纬度不能为空");
         }
-
+        Long count = studentCheckRecordMapper.selectCount(new LambdaQueryWrapper<StudentCheckRecord>()
+                .eq(StudentCheckRecord::getTeacherCheckRecordId, recordId)
+                .eq(StudentCheckRecord::getStudentId, studentId));
+        if (count > 0) {
+            return R.error("请勿重复签到");
+        }
         // 获取教师打卡记录 ID
         Long teacherCheckRecordId = record.getTeacherCheckRecordId();
         if (teacherCheckRecordId == null) {
@@ -79,11 +85,11 @@ public class StudentCheckRecordController {
             status = "迟到";
         }
 
-        String geoKey = "teacherCheckRecord:geo:"+id;
+        String geoKey = "teacherCheckRecord:geo:"+recordId;
         GeoOperations<String, String> geo = redisTemplate.opsForGeo();
 
         // 将学生位置存入 Redis
-        geo.add("teacherCheckRecord:geo:"+id, new Point(studentLongitude, studentLatitude), "studentLocation");
+        geo.add("teacherCheckRecord:geo:"+recordId, new Point(studentLongitude, studentLatitude), "studentLocation");
 
         // 计算学生位置与教师位置的距离（米）
         Distance distance = geo.distance(
@@ -93,10 +99,10 @@ public class StudentCheckRecordController {
                 Metrics.METERS
         );
         System.out.println("嘻嘻嘻哈哈"+distance.getValue()/10000);
-        // 检查距离是否超过 300 米
-        if (distance == null || distance.getValue()/10000 > 500) {
+        // 检查距离是否超过 1000 米
+        if (distance == null || distance.getValue()/10000 > 1000) {
             geo.remove(studentId.toString(), "studentLocation");
-            return R.error("不在允许打卡的范围内，距离超过 300 米");
+            return R.error("不在允许打卡的范围内，距离超过 1000 米");
         }
 
         // 如果距离合规，插入学生打卡记录

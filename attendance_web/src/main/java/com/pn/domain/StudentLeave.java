@@ -41,10 +41,21 @@ public class StudentLeave implements Serializable {
     private Long studentId;
 
     /**
+     * 班级id
+     */
+    private Long clazzId;
+
+    /**
      * 学生姓名
      */
     @TableField(exist = false)
     private String studentName;
+
+    /**
+     * 班级名
+     */
+    @TableField(exist = false)
+    private String clazzName;
 
     /**
      * 请假类型（如病假、事假等）
@@ -54,14 +65,14 @@ public class StudentLeave implements Serializable {
     /**
      * 请假开始时间
      */
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate startDate;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime startDate;
 
     /**
      * 请假结束时间
      */
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate endDate;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime endDate;
 
     /**
      * 请假原因
