@@ -1,5 +1,6 @@
 package com.pn.domain;
 
+import com.alibaba.excel.annotation.ExcelProperty;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -36,6 +37,7 @@ public class Student implements Serializable {
     /**
      * 学生学号
      */
+    @ExcelProperty("学号")
     private String studentNo;
 
     /**
@@ -46,21 +48,25 @@ public class Student implements Serializable {
     /**
      * 学生姓名
      */
+    @ExcelProperty("姓名")
     private String name;
 
     /**
      * 性别
      */
+    @ExcelProperty("性别")
     private String gender;
 
     /**
      * 手机号
      */
+    @ExcelProperty("手机号")
     private String phone;
 
     /**
      * 家庭住址
      */
+    @ExcelProperty("家庭住址")
     private String address;
 
     /**
@@ -72,6 +78,7 @@ public class Student implements Serializable {
      * 班级名称
      */
     @TableField(exist = false)
+    @ExcelProperty("所属班级")
     private String clazzName;
 
     /**

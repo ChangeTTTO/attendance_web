@@ -1,6 +1,7 @@
 package com.pn.controller;
 
 
+import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -11,9 +12,17 @@ import com.pn.domain.Student;
 import com.pn.mapper.ClazzMapper;
 import com.pn.mapper.StudentMapper;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -205,6 +214,51 @@ public class StudentController {
     public R logout() {
         // 退出登录不需要特别处理，直接返回成功响应
         return R.success("退出登录成功");
+    }
+
+    @GetMapping("/export")
+    @Operation(summary = "导出学生数据")
+    public ResponseEntity<byte[]> exportStudentData(@RequestParam(required = false) String studentNo) {
+        // 创建查询条件
+        LambdaQueryWrapper<Student> queryWrapper = new LambdaQueryWrapper<>();
+        if (studentNo != null && !studentNo.trim().isEmpty()) {
+            queryWrapper.like(Student::getStudentNo, studentNo);
+        }
+
+        List<Student> students = studentMapper.selectList(queryWrapper);
+
+        // 使用 EasyExcel 导出数据
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        EasyExcel.write(outputStream, Student.class).sheet("学生数据").doWrite(students);
+
+        byte[] content = outputStream.toByteArray();
+
+        // 设置响应头，指示为下载文件
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=students.xlsx")
+                .body(content);
+    }
+
+
+    @PostMapping("/import")
+    @Operation(summary = "导入学生数据")
+    public R importStudentData(@RequestParam("file") MultipartFile file) {
+        try {
+            // 解析Excel文件
+            InputStream inputStream = file.getInputStream();
+            List<Student> students = EasyExcel.read(inputStream)
+                    .head(Student.class) // 这里指定你的实体类
+                    .sheet()
+                    .doReadSync();
+
+            // 将解析到的学生数据批量插入数据库
+            students.forEach(studentMapper::insert);
+
+            return R.success("导入成功");
+
+        } catch (Exception e) {
+            return R.error("导入失败：" + e.getMessage());
+        }
     }
 
 
